@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Compiler</title>
+    <style>
+        *{
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .compilerX_container {
+            display: flex;
+            width: 90%;
+            margin: autos;
+            filter: blur(0px);
+        }
+        #compiler_header {
+            width: 90%;
+        }
+        .compilerX_editorContainer, .compilerX_inputOutputContainer {
+            width: 50%;
+            height: 650px;
+        }
+        .compilerX_editorContainer {
+            width: 85%;
+        }
+        .editor_header{
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid black;
+            width: 97%;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .editor_textarea textarea, .editor_header, .compilerX_inputOutputContainer {
+            background-color: rgba(0, 0, 0, 0.806);
+            color: white;
+        }
+        .output_area {
+            background-color: white;
+        }
+        .editor_textarea textarea {
+            resize: none;
+            width: 97%;
+            margin-top: 9px;
+            border-radius: 5px;
+            padding: 10px;
+            height: 550px;
+            outline: none;
+            color: white;
+        }
+        #language {
+            width: 200px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #runButton {
+            width: 70px;
+            border-radius: 5px;
+            background-color: green;
+            border: none;
+            color: white;
+        }
+        .compilerX_inputOutputContainer {
+            border: 1px solid black;
+            margin-left: 20px !important;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            border-radius: 5px;
+        }
+        .inputArea_container, .outputArea_container {
+            display: flex;
+            flex-direction: column;
+        }
+        .outputArea_container {
+            margin-top: 10px;
+        }
+        .inputArea_container label, .outputArea_container label {
+            margin-left: 20px;
+        }
+        .input_area,.output_area {
+            height: 280px;
+            width:90%;
+            margin: auto;
+            border: 1px solid black;
+            border-radius: 5px;
+            resize: none;
+        }
+        .input_area {
+            outline: none;
+        }
+        .input_area, .output_area{
+            padding: 5px 0px 0px 5px;
+            color: black;
+        }
+        .output_area {
+            margin-top: 20px;
+        }
+        .input_label {
+            margin-top: 10px;
+        }
+        .output_label {
+            margin-bottom: -15px;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid white;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: none;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            position: absolute;
+            top: 45%;
+            left: 47%;
+            z-index: 10;
+        }
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        } 
+
+        #fullscreenButton {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            /* top: -40px;
+            right: 0px; */
+            background-color: #313131;
+            color: white;
+        }
+
+        .fullScreenBtn_container {
+            width: 90%;
+            display: flex;
+            justify-content: end;
+            margin-bottom: 10px;
+        }
+        #warningMessage_container {
+            width: 90%;
+            margin: auto;
+            position: absolute;
+            left: 5%;
+        }
+        #warningMessage {
+            margin: auto;
+            width: 30%;
+            font-style: italic;
+            text-align: center;
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="warningMessage_container" style="display: none;">
+        <div id="warningMessage"></div>
+    </div>
+    <div class="container">
+        <span class="loader"></span>
+        <div id="compiler_header">
+            <h1>CompilerX</h1>
+        </div>
+        <div class="fullScreenBtn_container" id="fullscreenButton_container">
+            <button id="fullscreenButton">Toggle Fullscreen</button>
+        </div>
+        <div class="compilerX_container" id="compilerX_Container">
+            <div class="compilerX_editorContainer">
+                <div class="editor_header">
+                    <select id="language">
+                        <option value="python">Python</option>
+                        <option value="c">C</option>
+                        <option value="c++">C++</option>
+                        <option value="java">Java</option>
+                    </select>
+                    <button type="button" id="runButton">Run</button>
+                </div>
+                <div class="editor_textarea">
+                    <textarea id="code" rows="10" cols="50"></textarea> 
+                </div>
+            </div>
+            <div class="compilerX_inputOutputContainer" id="compilerX_inpOutContainer">
+                <div class="inputArea_container">
+                    <label class="input_label">Input</label>
+                    <textarea id="input" rows="10" cols="50" class="input_area"></textarea>
+                </div>
+                <div class="outputArea_container">
+                    <label class="output_label">Output</label>
+                    <div id="output" class="output_area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        
+        const code = document.getElementById('code');
+        const language = document.getElementById('language');
+        const input = document.getElementById('input');
+        const output = document.getElementById('output');
+        const run = document.getElementById('runButton');
+        const loader = document.querySelector('.loader');
+        const heading = document.getElementById('compiler_header');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const compilerX_Container = document.getElementById('compilerX_Container');
+        const compilerX_inpOutContainer = document.getElementById('compilerX_inpOutContainer');
+        const fullscreenButton_container = document.getElementById('fullscreenButton_container');
+        const warningMessage = document.getElementById('warningMessage');
+        const compilerContainer = document.querySelector('.compilerX_container');
+
+        fullscreenButton.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                // Enter full-screen mode
+                if (document.documentElement.requestFullscreen) {
+                    heading.style.display = "none";
+                    compilerX_Container.style.width = "100vw";
+                    fullscreenButton_container.style.width = "100vw";
+                    compilerX_Container.style.height = "92vh";
+                    compilerX_inpOutContainer.style.height = "92vh";
+                    code.style.height = "82.5vh";
+                    input.style.height = "40vh";
+                    output.style.height = "40vh";
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
+                    heading.style.display = "none";
+                    compilerX_Container.style.width = "100vw";
+                    fullscreenButton_container.style.width = "100vw";
+                    compilerX_Container.style.height = "92vh";
+                    compilerX_inpOutContainer.style.height = "92vh";
+                    code.style.height = "82.5vh";
+                    input.style.height = "40vh";
+                    output.style.height = "40vh";
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { /* IE11 */
+                    heading.style.display = "none";
+                    compilerX_Container.style.width = "100vw";
+                    fullscreenButton_container.style.width = "100vw";
+                    compilerX_Container.style.height = "92vh";
+                    compilerX_inpOutContainer.style.height = "92vh";
+                    code.style.height = "82.5vh";
+                    input.style.height = "40vh";
+                    output.style.height = "40vh";
+                    document.documentElement.msRequestFullscreen();
+                }
+            } else {
+                // Exit full-screen mode
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    heading.style = "block";
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                    heading.style.display = "block";
+                } else if (document.msExitFullscreen) { /* IE11 */
+                    document.msExitFullscreen();
+                    heading.style.display = "block";
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', function(event) {
+            // Cancel the event
+            event.preventDefault();
+            // Chrome requires returnValue to be set
+            event.returnValue = '';
+
+            // Display a confirmation dialog
+            var confirmationMessage = 'Are you sure you want to leave? Your changes may not be saved.';
+            return confirmationMessage;
+        });
+
+        console.log('output -->', output);
+        let payload = {};
+        run.addEventListener("click", async (event) => {
+            event.preventDefault();
+            payload = {
+                code: code?.value,
+                input: input?.value,
+                language: language?.value,
+            }
+            try {
+                compilerContainer.style.filter = "blur(2px)";
+                loader.style.display = "block";
+                const response = await fetch('http://localhost:8009/compile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if(!response?.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                if(data?.output) {
+                    const formattedOutput = data?.output?.replace(/\n/g, "<br>");
+                    output.innerHTML = formattedOutput;
+                }
+                else {
+                    const formattedOutput = data?.error?.replace(/\n/g, "<br>");
+                    output.innerHTML = formattedOutput;
+                }
+            } catch (error) {
+                console.error('Error occurred while fetching data:', error);
+            } finally {
+                loader.style.display = "none";
+                compilerContainer.style.filter = "blur(0px)";
+            }
+        })
+
+        let tabSwitchCount = 0;
+        const warningMessageContainer = document.getElementById('warningMessage_container');
+        const okButton = document.getElementById('okButton');
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                tabSwitchCount++;
+                warningMessageContainer.style.display = 'block';
+                warningMessage.innerHTML = `
+                    <p>Warning: Attempting to switch tabs.<br/> You have switched the tab ${tabSwitchCount} ${tabSwitchCount <=1 ? 'time' : 'times'}</p>
+                `
+            }
+        });
+
+        setTimeout(() => {
+            warningMessageContainer.style.display = 'none';
+        }, 5000); 
+            // Add here any code to resume UI interaction after the warning
+
+    </script>
+</body>
+
+</html>
